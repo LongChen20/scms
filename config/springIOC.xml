@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop
+            http://www.springframework.org/schema/aop/spring-aop.xsd
+             http://www.springframework.org/schema/tx
+            http://www.springframework.org/schema/tx/spring-tx.xsd
+            http://www.springframework.org/schema/mvc
+            http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--扫描组建不包含controller避免重复扫描-->
+    <context:component-scan base-package="com.scms">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+
+
+    <!--加载数据连接数据 配置连接池-->
+    <context:property-placeholder location="classpath:db.properties"/>
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}"/>
+        <property name="driverClass" value="${jdbc.driverClass}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+        <!-- 初始化连接池中的连接数，取值应在minPoolSize与maxPoolSize之间，默认为3-->
+        <property name="initialPoolSize" value="${jdbc.initialPoolSize}"/>
+        <!--最大空闲时间，60秒内未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->
+        <property name="maxIdleTime" value="${jdbc.maxIdleTime}"/>
+        <!--连接池中保留的最大连接数。默认值: 15 -->
+        <property name="maxPoolSize" value="${jdbc.maxPoolSize}"/>
+        <!-- 连接池中保留的最小连接数，默认为：3-->
+        <property name="minPoolSize" value="${jdbc.minPoolSize}"/>
+    </bean>
+
+
+    <!--配置事物管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--被管理的数据源-->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--配置注解方式管理事物-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!--获得工厂-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!--读取mybatis核心配置文件-->
+        <property name="configLocation" value="classpath:sqlmapperconfig.xml"/>
+    </bean>
+
+    <!--扫描包获得Mapper代理对象-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--注入工厂 可以不注入，自动去IOC容器里面找 -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!--批量扫描包获得Mapper实例-->
+        <property name="basePackage" value="com.scms.dao"/>
+    </bean>
+
+</beans>

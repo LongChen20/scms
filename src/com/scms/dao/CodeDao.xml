@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.scms.dao.CodeDao">
+<resultMap id="codeAll" type="code">
+    <id property="id" column="id"/>
+    <result property="codename" column="codename"/>
+    <result property="intro" column="intro"/>
+    <result property="addTime" column="addTime"/>
+        <association property="owner" javaType="user">
+            <id property="id" column="userid"/>
+            <result property="username" column="username"/>
+        </association>
+</resultMap>
+
+    <select id="selectCodeAll" resultMap="codeAll">
+        SELECT
+			scms_code.*,scms_user.id userid,scms_user.username
+		FROM
+			scms_code,scms_user
+		WHERE
+			scms_user.id=scms_code.`owner`
+    </select>
+
+    <!--查询总条数-->
+    <select id="selectFindCodeKey" parameterType="queryvo" resultType="int">
+        select count(1) from scms_code
+        <where>
+            <if test="findkey != null and findkey != ''">
+                and
+                    codename like "%"#{findkey}"%"
+            </if>
+        </where>
+    </select>
+
+    <!--查询结果集-->
+    <select id="selectFindCodeList" parameterType="QueryVO" resultMap="codeAll">
+        SELECT
+              scms_code.*,scms_user.id userid,scms_user.username
+        FROM
+               scms_code,scms_user
+        <where>
+              and scms_user.id=scms_code.`owner`
+            <if test="findkey != null and findkey != ''">
+                and
+                    codename like "%"#{findkey}"%"
+                OR
+                    intro LIKE "%"#{findkey}"%"
+            </if>
+        </where>
+        limit #{startRow},#{size}
+    </select>
+
+    <select id="selectById" parameterType="code" resultType="code">
+        select * from
+            scms_code
+        where
+            id = #{id}
+    </select>
+
+    <update id="updateCode" parameterType="code" >
+        update scms_code set codename = #{codename},intro = #{intro} where id = #{id}
+    </update>
+
+    <delete id="deleteCodeById" parameterType="Integer">
+        delete  from scms_code where id = #{id}
+    </delete>
+
+    <insert id="insertCode" parameterType="code">
+        insert into scms_code (id,codename,filepath,intro,owner,addTime) values(null,#{codename},#{filepath},#{intro},#{owner.id },#{addTime})
+    </insert>
+
+</mapper>

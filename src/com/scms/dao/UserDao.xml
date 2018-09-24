@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.scms.dao.UserDao">
+
+    <!--用户名查密码-->
+    <select id="selectAllName"  resultType="user">
+        select * from scms_user
+    </select>
+
+    <select id="selectByname" parameterType="String" resultType="user">
+        select * from scms_user where username = #{name}
+    </select>
+
+    <insert id="insertRegister" parameterType="user">
+        insert into scms_user (id,username,`password`,rank,registerTime) VALUES(null,#{username},#{password},#{rank},#{registerTime})
+    </insert>
+
+    <update id="updateChangePass" parameterType="user">
+         UPDATE scms_user SET `password`=#{password} WHERE id = #{id}
+    </update>
+
+    <select id="selectById" parameterType="int" resultType="user">
+        select id,username,password,rank,registerTime from scms_user where id = #{id}
+    </select>
+
+</mapper>
